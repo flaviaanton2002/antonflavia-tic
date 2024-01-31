@@ -6,6 +6,7 @@ const { faker } = require("@faker-js/faker");
 
 const db = admin.firestore();
 
+// GET actors by movie ID
 router.get("/:id", async (req, res) => {
   try {
     const movieId = req.params.id;
@@ -15,27 +16,27 @@ router.get("/:id", async (req, res) => {
       .where("movieId", "==", movieId)
       .get();
 
-    const actors = [];
-    actorsSnapshot.forEach((doc) => {
-      actors.push({
-        id: doc.id,
-        ...doc.data(),
-      });
-    });
+    const actors = actorsSnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
     res.json(actors);
   } catch (error) {
     console.error("Error getting actors:", error);
-    res.status(500).send("Internal Server Error");
+    res.status(500).send("Internal server error!");
   }
 });
 
-router.post("/", verifyToken, async (req, res) => {
+// POST add a new actor
+router.post("/addActor", verifyToken, async (req, res) => {
   try {
-    let docRef = db.collection("actors").doc();
+    const docRef = db.collection("actors").doc();
     const movieId = req.body.movieId;
+
     let movieData = {
-      projectName: null,
-      projectDescription: null,
+      movieName: null,
+      movieDescription: null,
     };
 
     if (movieId) {
@@ -51,36 +52,38 @@ router.post("/", verifyToken, async (req, res) => {
 
     if (
       !req.body.name ||
-      !req.body.description ||
-      !req.body.age ||
+      !req.body.role ||
+      !req.body.birthday ||
       !req.body.image
     ) {
-      res.json({ message: "Actors data incomplete." });
+      return res.json({ message: "Actor data incomplete!" });
     }
 
     await docRef.set({
       name: req.body.name,
-      description: req.body.description,
-      age: req.body.age,
+      role: req.body.role,
+      birthday: req.body.birthday,
       image: req.body.image,
       movieId,
       ...movieData,
     });
 
-    res.json({ message: "Team member added successfully" });
+    res.json({ message: "Actor added successfully!" });
   } catch (error) {
-    console.error("Unable to push new Team member:", error);
-    res.status(500).send("Unable to push new Team member.");
+    console.error("Unable to add a new actor:", error);
+    res.status(500).send("Unable to add a new actor!");
   }
 });
 
-router.post("/generateRandomActor", async (req, res) => {
+// POST add a new random actor
+router.post("/addRandomActor", verifyToken, async (req, res) => {
   try {
-    let docRef = db.collection("actors").doc();
+    const docRef = db.collection("actors").doc();
     const movieId = req.body.movieID;
+
     let movieData = {
-      projectName: null,
-      projectDescription: null,
+      movieName: null,
+      movieDescription: null,
     };
 
     if (movieId) {
@@ -96,42 +99,57 @@ router.post("/generateRandomActor", async (req, res) => {
 
     await docRef.set({
       name: faker.person.fullName(),
-      description: faker.word.adjective(),
-      age: faker.number.int(100),
-      image:
-        "https://m.media-amazon.com/images/M/MV5BMGI3OTI0NjctMjM2ZC00MjZiLWIxMjctODczN2M4MTFjZmY1XkEyXkFqcGdeQXJoYW5uYWg@._V1_.jpg",
+      role: faker.helpers.arrayElement([
+        "Protagonist",
+        "Antagonist",
+        "Supporting Character",
+        "Love Interest",
+        "Sidekick",
+      ]),
+      birthday: faker.date.birthdate(),
+      image: faker.image.avatar(),
       movieId,
       ...movieData,
     });
 
-    res.json({ message: "Team member added successfully" });
+    res.json({ message: "Random actor added successfully!" });
   } catch (error) {
-    console.error("Unable to push new Team member:", error);
-    res.status(500).send("Unable to push new Team member.");
+    console.error("Unable to add a new random actor:", error);
+    res.status(500).send("Unable to add a new random actor!");
   }
 });
 
+// PUT update an actor by ID
 router.put("/:id", verifyToken, async (req, res) => {
   try {
     const id = req.params.id;
-    let docRef = db.collection("team").doc(id);
+    const docRef = db.collection("actors").doc(id);
 
-    if (!req.body.name || !req.body.function || !req.body.email) {
-      res.json({ message: "Team member data incomplete." });
+    if (
+      !req.body.name ||
+      !req.body.role ||
+      !req.body.birthday ||
+      !req.body.image
+    ) {
+      return res.json({ message: "Actor data incomplete!" });
     }
 
     await docRef.update({
       name: req.body.name,
-      function: req.body.function,
-      email: req.body.email,
-      projectId: req.body.projectId,
+      role: req.body.role,
+      birthday: req.body.birthday,
+      image: req.body.image,
+      movieId: req.body.movieId,
     });
+
+    res.json({ message: "Actor updated successfully!" });
   } catch (error) {
-    console.error("Unable to update the Team member:", error);
-    res.status(500).send("Unable to update the Team member.");
+    console.error("Unable to update the actor:", error);
+    res.status(500).send("Unable to update the actor!");
   }
 });
 
+// DELETE an actor by ID
 router.delete("/:id", verifyToken, async (req, res) => {
   try {
     const actorId = req.params.id;
@@ -139,14 +157,14 @@ router.delete("/:id", verifyToken, async (req, res) => {
     const snapshot = await actorsDoc.get();
 
     if (!snapshot.exists) {
-      return res.status(404).send("Actor member not found");
+      return res.status(404).send("Actor not found!");
     }
 
     await actorsDoc.delete();
-    res.send("Actor deleted successfully");
+    res.send("Actor deleted successfully!");
   } catch (error) {
     console.error("Error deleting actor:", error);
-    res.status(500).send("Internal Server Error");
+    res.status(500).send("Internal server error!");
   }
 });
 

@@ -2,62 +2,60 @@ const express = require("express");
 const router = express.Router();
 const admin = require("firebase-admin");
 const { verifyToken } = require("../middleware.js");
-const db = admin.firestore();
 const { faker } = require("@faker-js/faker");
 
+const db = admin.firestore();
+
+// GET all movies
 router.get("/", async (req, res) => {
   try {
     const moviesSnapshot = await db.collection("movies").get();
-    const movies = [];
-    moviesSnapshot.forEach((doc) => {
-      movies.push({
-        id: doc.id,
-        ...doc.data(),
-      });
-    });
+    const movies = moviesSnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
     res.json(movies);
   } catch (error) {
     console.error("Error getting movies:", error);
-    res.status(500).send("Internal Server Error");
+    res.status(500).send("Internal server error!");
   }
 });
 
+// GET movie by ID
 router.get("/:id", async (req, res) => {
   try {
-    const projectId = req.params.id;
-    const projectDoc = await db.collection("movies").doc(projectId).get();
+    const movieId = req.params.id;
+    const movieDoc = await db.collection("movies").doc(movieId).get();
 
-    if (!projectDoc.exists) {
-      return res.status(404).send("Movie not found");
+    if (!movieDoc.exists) {
+      return res.status(404).send("Movie not found!");
     }
 
-    const projectData = {
-      id: projectDoc.id,
-      ...projectDoc.data(),
+    const movieData = {
+      id: movieDoc.id,
+      ...movieDoc.data(),
     };
 
-    res.json(projectData);
+    res.json(movieData);
   } catch (error) {
-    console.error("Error getting Movie by ID:", error);
-    res.status(500).send("Internal Server Error");
+    console.error("Error getting movie by ID:", error);
+    res.status(500).send("Internal server error!");
   }
 });
 
-////VERIFY TOKEN!!!
-router.post("/", verifyToken, async (req, res) => {
+// POST add a new movie
+router.post("/addMovie", verifyToken, async (req, res) => {
   try {
-    let docRef = db.collection("movies").doc();
-
     if (
       !req.body.name ||
       !req.body.description ||
       !req.body.genre ||
       !req.body.image
     ) {
-      res.json({ message: "Movie must contain all data." });
-      return;
+      return res.json({ message: "Movie must contain all data!" });
     }
 
+    const docRef = db.collection("movies").doc();
     await docRef.set({
       movieId: docRef.id,
       name: req.body.name,
@@ -66,84 +64,85 @@ router.post("/", verifyToken, async (req, res) => {
       image: req.body.image,
     });
 
-    res.json({ message: "Movie added successfully" });
+    res.json({ message: "Movie added successfully!" });
   } catch (error) {
-    console.error("Unable to push new movie:", error);
-    res.status(500).send("Unable to push new movie.");
+    console.error("Unable to add a new movie:", error);
+    res.status(500).send("Unable to add a new movie!");
   }
 });
 
-router.post("/generateRandomMovie", async (req, res) => {
+// POST add a new random movie
+router.post("/addRandomMovie", verifyToken, async (req, res) => {
   try {
-    let docRef = db.collection("movies").doc();
-
+    const docRef = db.collection("movies").doc();
+    var name = faker.word.noun();
+    var desc = faker.word.words(20);
     await docRef.set({
-      movieId: faker.string.alpha(),
-      name: faker.word.adverb(100),
-      description: faker.word.adjective(),
-      genre: faker.word.adjective(),
-      image: faker.image.urlPicsumPhotos(),
+      movieId: faker.string.uuid(),
+      name: name.charAt(0).toUpperCase() + name.slice(1),
+      description: desc.charAt(0).toUpperCase() + desc.slice(1) + ".",
+      genre: faker.helpers.arrayElement([
+        "Comedy",
+        "Drama",
+        "Action",
+        "Thriller",
+        "Fantastic",
+      ]),
+      image: faker.image.url(),
     });
 
-    res.json({ message: "Movie added successfully" });
+    res.json({ message: "Random movie added successfully!" });
   } catch (error) {
-    console.error("Unable to push new movie:", error);
-    res.status(500).send("Unable to push new movie.");
+    console.error("Unable to add a new random movie:", error);
+    res.status(500).send("Unable to add a new random movie!");
   }
 });
 
+// PUT update a movie by ID
 router.put("/:id", verifyToken, async (req, res) => {
   try {
-    const id = req.params.id;
-    let docRef = db.collection("projects").doc(id);
+    const movieId = req.params.id;
+    const docRef = db.collection("movies").doc(movieId);
 
-    if (!req.body.name || !req.body.description || !req.body.startDate) {
-      res.json({ message: "Project must contain all data." });
+    if (
+      !req.body.name ||
+      !req.body.description ||
+      !req.body.genre ||
+      !req.body.image
+    ) {
+      return res.json({ message: "Movie must contain all data!" });
     }
 
     await docRef.update({
       name: req.body.name,
       description: req.body.description,
-      startDate: req.body.startDate,
+      genre: req.body.genre,
+      image: req.body.image,
     });
+
+    res.json({ message: "Movie updated successfully!" });
   } catch (error) {
-    console.error("Unable to update the project:", error);
-    res.status(500).send("Unable to update the project.");
+    console.error("Unable to update the movie:", error);
+    res.status(500).send("Unable to update the movie!");
   }
 });
 
-router.delete("/:id", async (req, res) => {
+// DELETE a movie by ID
+router.delete("/:id", verifyToken, async (req, res) => {
   try {
     const movieId = req.params.id;
-
-    const moviesSnapshot = await db
-      .collection("movies")
-      .where("movieId", "==", movieId)
-      .get();
-    const updatedPromises = [];
-    moviesSnapshot.forEach((doc) => {
-      updatedPromises.push(
-        doc.ref.update({
-          projectId: null,
-          projectName: null,
-          projectDescription: null,
-          projectStartDate: null,
-        })
-      );
-    });
-    await Promise.all(updatedPromises);
-
     const moviesDoc = db.collection("movies").doc(movieId);
+
     const snapshot = await moviesDoc.get();
     if (!snapshot.exists) {
-      return res.status(404).send("Movie not found");
+      return res.status(404).send("Movie not found!");
     }
 
     await moviesDoc.delete();
-    res.send("Movie deleted successfully");
+    res.send("Movie deleted successfully!");
   } catch (error) {
-    console.error("Error deleting Movie:", error);
-    res.status(500).send("Internal Server Error");
+    console.error("Error deleting movie:", error);
+    res.status(500).send("Internal server error!");
   }
 });
 

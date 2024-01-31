@@ -1,14 +1,17 @@
 const jwt = require("jsonwebtoken");
 
+// Middleware to verify the authenticity of the user's session token.
 function verifyToken(req, res, next) {
-  if (!req.headers.authorization) {
+  const { authorization } = req.headers;
+
+  if (!authorization) {
     return res.status(400).send({
       message: "Your session is not valid!",
     });
   }
+
   try {
-    const authHeader = req.headers.authorization;
-    const token = authHeader.split(" ")[1];
+    const token = authorization.split(" ")[1];
     const decoded = jwt.verify(token, "secret-key");
     req.userData = decoded;
     next();
@@ -19,12 +22,16 @@ function verifyToken(req, res, next) {
   }
 }
 
+// Middleware to validate user registration data.
 function validateRegister(req, res, next) {
-  if (!req.body.password || req.body.password.length < 8) {
+  const { password } = req.body;
+
+  if (!password || password.length < 8) {
     return res.status(400).send({
-      message: "Please enter a password with min. 8 chars",
+      message: "Please enter a password with a minimum of 8 characters!",
     });
   }
+
   next();
 }
 
