@@ -99,15 +99,9 @@ router.post("/addRandomActor", verifyToken, async (req, res) => {
 
     await docRef.set({
       name: faker.person.fullName(),
-      role: faker.helpers.arrayElement([
-        "Protagonist",
-        "Antagonist",
-        "Supporting Character",
-        "Love Interest",
-        "Sidekick",
-      ]),
+      role: faker.person.jobType(),
       birthday: faker.date.birthdate(),
-      image: faker.image.avatar(),
+      image: faker.image.urlLoremFlickr({ category: "people" }),
       movieId,
       ...movieData,
     });
