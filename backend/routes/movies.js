@@ -2,14 +2,14 @@ const express = require("express");
 const router = express.Router();
 const admin = require("firebase-admin");
 const { verifyToken } = require("../middleware.js");
-
 const db = admin.firestore();
+const { faker } = require("@faker-js/faker");
 
 router.get("/", async (req, res) => {
   try {
-    const moviesDB = await db.collection("movies").get();
+    const moviesSnapshot = await db.collection("movies").get();
     const movies = [];
-    moviesDB.forEach((doc) => {
+    moviesSnapshot.forEach((doc) => {
       movies.push({
         id: doc.id,
         ...doc.data(),
@@ -24,44 +24,65 @@ router.get("/", async (req, res) => {
 
 router.get("/:id", async (req, res) => {
   try {
-    const id = req.params.id;
-    const movieDoc = await db.collection("movies").doc(id).get();
+    const projectId = req.params.id;
+    const projectDoc = await db.collection("movies").doc(projectId).get();
 
-    if (!movieDoc.exists) {
+    if (!projectDoc.exists) {
       return res.status(404).send("Movie not found");
     }
 
-    const movieData = {
-      id: movieDoc.id,
-      ...movieDoc.data(),
+    const projectData = {
+      id: projectDoc.id,
+      ...projectDoc.data(),
     };
 
-    res.json(movieData);
+    res.json(projectData);
   } catch (error) {
-    console.error("Error getting movie by ID:", error);
+    console.error("Error getting Movie by ID:", error);
     res.status(500).send("Internal Server Error");
   }
 });
 
+////VERIFY TOKEN!!!
 router.post("/", verifyToken, async (req, res) => {
   try {
     let docRef = db.collection("movies").doc();
 
     if (
-      !req.body.title ||
+      !req.body.name ||
       !req.body.description ||
       !req.body.genre ||
-      !req.body.duration
+      !req.body.image
     ) {
       res.json({ message: "Movie must contain all data." });
+      return;
     }
 
     await docRef.set({
       movieId: docRef.id,
-      title: req.body.title,
+      name: req.body.name,
       description: req.body.description,
       genre: req.body.genre,
-      duration: req.body.duration,
+      image: req.body.image,
+    });
+
+    res.json({ message: "Movie added successfully" });
+  } catch (error) {
+    console.error("Unable to push new movie:", error);
+    res.status(500).send("Unable to push new movie.");
+  }
+});
+
+router.post("/generateRandomMovie", async (req, res) => {
+  try {
+    let docRef = db.collection("movies").doc();
+
+    await docRef.set({
+      movieId: faker.string.alpha(),
+      name: faker.word.adverb(100),
+      description: faker.word.adjective(),
+      genre: faker.word.adjective(),
+      image: faker.image.urlPicsumPhotos(),
     });
 
     res.json({ message: "Movie added successfully" });
@@ -74,57 +95,54 @@ router.post("/", verifyToken, async (req, res) => {
 router.put("/:id", verifyToken, async (req, res) => {
   try {
     const id = req.params.id;
-    let docRef = db.collection("movies").doc(id);
+    let docRef = db.collection("projects").doc(id);
 
-    if (
-      !req.body.title ||
-      !req.body.description ||
-      !req.body.genre ||
-      !req.body.duration
-    ) {
-      res.json({ message: "Movie must contain all data." });
+    if (!req.body.name || !req.body.description || !req.body.startDate) {
+      res.json({ message: "Project must contain all data." });
     }
 
     await docRef.update({
-      title: req.body.title,
+      name: req.body.name,
       description: req.body.description,
-      genre: req.body.genre,
-      duration: req.body.duration,
+      startDate: req.body.startDate,
     });
   } catch (error) {
-    console.error("Unable to update the movie:", error);
-    res.status(500).send("Unable to update the movie.");
+    console.error("Unable to update the project:", error);
+    res.status(500).send("Unable to update the project.");
   }
 });
 
-router.delete("/:id", verifyToken, async (req, res) => {
+router.delete("/:id", async (req, res) => {
   try {
-    const id = req.params.id;
+    const movieId = req.params.id;
 
-    const actorsDB = await db.collection("actors").where("id", "==", id).get();
+    const moviesSnapshot = await db
+      .collection("movies")
+      .where("movieId", "==", movieId)
+      .get();
     const updatedPromises = [];
-    actorsDB.forEach((doc) => {
+    moviesSnapshot.forEach((doc) => {
       updatedPromises.push(
         doc.ref.update({
-          title: null,
-          description: null,
-          genre: null,
-          duration: null,
+          projectId: null,
+          projectName: null,
+          projectDescription: null,
+          projectStartDate: null,
         })
       );
     });
     await Promise.all(updatedPromises);
 
-    const movieDoc = db.collection("movies").doc(id);
-    const snapshot = await movieDoc.get();
+    const moviesDoc = db.collection("movies").doc(movieId);
+    const snapshot = await moviesDoc.get();
     if (!snapshot.exists) {
       return res.status(404).send("Movie not found");
     }
 
-    await movieDoc.delete();
+    await moviesDoc.delete();
     res.send("Movie deleted successfully");
   } catch (error) {
-    console.error("Error deleting movie:", error);
+    console.error("Error deleting Movie:", error);
     res.status(500).send("Internal Server Error");
   }
 });

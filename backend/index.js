@@ -15,8 +15,8 @@ app.use(cors());
 app.use(bodyParser.json());
 
 app.use("/", authRoutes);
-app.use("/movies", moviesRoutes);
-app.use("/actors", actorsRoutes);
+app.use("/api/movies", moviesRoutes);
+app.use("/api/actors", actorsRoutes);
 
 app.listen(port, () => {
   console.log(`Server listen on port ${port}`);

@@ -10,17 +10,15 @@ const db = admin.firestore();
 
 router.post("/register", validateRegister, async (req, res) => {
   try {
-    const { name, email, password, birthday } = req.body;
+    const { email, password } = req.body;
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
     let docRef = db.collection("users").doc();
 
     await docRef.set({
-      name: name,
       email: email,
       password: hashedPassword,
-      birthday: birthday,
     });
 
     return res.status(201).send({
