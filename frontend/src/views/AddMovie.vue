@@ -1,7 +1,11 @@
 <template>
-  <div class="col-md-12" >
+  <div class="col-md-12">
     <div class="card card-container">
-      <Form id ="addMovieForm" v-on:submit="handleAddMovie" :validation-schema="schema">
+      <Form
+        id="addMovieForm"
+        v-on:submit="handleAddMovie"
+        :validation-schema="schema"
+      >
         <div class="form-group">
           <label for="name" class="green">Name</label>
           <Field name="name" v-model="name" type="text" class="form-control" />
@@ -9,27 +13,44 @@
         </div>
         <div class="form-group">
           <label for="description" class="green">Description</label>
-          <Field name="description" v-model="description" type="text" class="form-control"/>
+          <Field
+            name="description"
+            v-model="description"
+            type="text"
+            class="form-control"
+          />
           <ErrorMessage name="description" class="error-feedback" />
         </div>
         <div class="form-group">
           <label for="genre" class="green">Genre</label>
-          <Field name="genre" v-model="genre" type="text" class="form-control" />
+          <Field name="genre" v-model="genre" as="select" class="form-control">
+            <option value="">Select Genre</option>
+            <option value="Comedy">Comedy</option>
+            <option value="Drama">Drama</option>
+            <option value="Action">Action</option>
+            <option value="Thriller">Thriller</option>
+            <option value="Fantastic">Fantastic</option>
+          </Field>
           <ErrorMessage name="genre" class="error-feedback" />
         </div>
         <div class="form-group">
           <label for="image" class="green">Image</label>
-          <Field name="image" v-model="image" type="text" class="form-control"/>
+          <Field
+            name="image"
+            v-model="image"
+            type="text"
+            class="form-control"
+          />
           <ErrorMessage name="image" class="error-feedback" />
         </div>
 
         <div class="form-group">
-          <button class="btn btn-primary btn-block" style="background-color: #ffffff" :disabled="loading">
+          <button class="btn btn-primary btn-block" :disabled="loading">
             <span
-                v-show="loading"
-                class="spinner-border spinner-border-sm"
+              v-show="loading"
+              class="spinner-border spinner-border-sm"
             ></span>
-            <span>Add Movie</span>
+            <span>Add movie</span>
           </button>
         </div>
 
@@ -46,7 +67,7 @@
 <script>
 import { Form, Field, ErrorMessage } from "vee-validate";
 import * as yup from "yup";
-import {RouterLink} from "vue-router";
+import { RouterLink } from "vue-router";
 import UserService from "@/services/user.service.js";
 
 export default {
@@ -58,38 +79,45 @@ export default {
     ErrorMessage,
   },
   data() {
-
     const schema = yup.object().shape({
       name: yup.string().required("Name is required!"),
       description: yup.string().required("Description is required!"),
       genre: yup.string().required("Genre is required!"),
-      image: yup.string().required("Image is required!"),
+      image: yup
+        .string()
+        .required("Image is required!")
+        .url("URL format is invalid!"),
     });
 
     return {
       loading: false,
       message: "",
       schema,
-      name: '',
-      description: '',
-      genre: '',
-      image: '',
+      name: "",
+      description: "",
+      genre: "",
+      image: "",
     };
   },
   methods: {
     async handleAddMovie() {
       this.loading = true;
 
-      const res = await UserService.addMovie(this.name, this.description, this.genre, this.image).then(
-          () => {
-            this.$router.push("/");
-          },
-          (error) => {
-            this.loading = false;
-            this.message = "Adding Movie Failed"
-          }
+      const res = await UserService.addMovie(
+        this.name,
+        this.description,
+        this.genre,
+        this.image
+      ).then(
+        () => {
+          this.$router.push("/");
+        },
+        (error) => {
+          this.loading = false;
+          this.message = "Adding Movie Failed";
+        }
       );
-      console.log(res)
+      console.log(res);
     },
   },
 };

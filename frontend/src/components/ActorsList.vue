@@ -3,10 +3,10 @@ import MovieImage from "@/components/icons/MovieImage.vue";
 import ListItem from "@/components/ListItem.vue";
 import UserService from "@/services/user.service.js";
 export default {
-  components: {ListItem, MovieImage},
+  components: { ListItem, MovieImage },
   props: {
     parentMovieName: String,
-    parentMovieId: String
+    parentMovieId: String,
   },
   computed: {
     loggedIn() {
@@ -27,34 +27,29 @@ export default {
     },
     async getAllActors(parentMovieId) {
       const res = await UserService.getAllActors(parentMovieId);
-      console.log(res)
+      console.log(res);
       this.listItems = await res.data;
     },
-    async generateRandomActor(parentMovieId) {
-      const res = await UserService.generateRandomActor(parentMovieId);
+    async addRandomActor(parentMovieId) {
+      const res = await UserService.addRandomActor(parentMovieId);
       this.$router.push("/");
     },
-    async generateRandomMovie() {
-      const res = await UserService.generateRandomMovie();
-      this.$router.push("/");
-    }
   },
 
   data() {
     return {
       listItems: [],
-    }
-
+    };
   },
   mounted() {
-    this.getAllActors(this.parentMovieId)
-  }
+    this.getAllActors(this.parentMovieId);
+  },
 };
 </script>
 
 <template>
   <div style="text-align: center">
-    <h1 class="green"> List of actors for {{parentMovieName}}</h1>
+    <h1 class="green">Actors that played in "{{ parentMovieName }}"</h1>
   </div>
   <div v-for="item in listItems">
     <ListItem>
@@ -62,27 +57,47 @@ export default {
         <MovieImage :imageLink="item.image" />
       </template>
       <div>
-        {{item.name}}
+        {{ item.name }}
       </div>
       <div>
-        {{item.description}}
+        {{ item.role }}
       </div>
       <div>
-        {{item.age}}
+        {{ item.birthday }}
       </div>
 
       <div style="text-align: center">
-        <i v-if="loggedIn" title = "Delete Actor" class="pi pi-times" style="color: green; font-size: 2rem" @click="deleteActor(item.id)"></i>
-
+        <i
+          v-if="loggedIn"
+          title="Delete Actor"
+          class="pi pi-times"
+          style="color: #42b883; font-size: 2rem"
+          @click="deleteActor(item.id)"
+        ></i>
       </div>
-
     </ListItem>
   </div>
   <div style="text-align: center">
-    <i v-if="loggedIn" title = "Delete Movie" class="pi pi-trash" style="color: #708090; font-size: 2rem" @click="deleteMovie(parentMovieId)"></i>
-    <i v-if="loggedIn" title = "Add Actor"  class="pi pi-user" style="color: #708090; font-size: 2rem" @click="addActor(parentMovieId)"></i>
-    <i v-if="loggedIn" title = "Generate Random Actor"  class="pi pi-discord" style="color: #708090; font-size: 2rem" @click="generateRandomActor(parentMovieId)"></i>
-    <i v-if="loggedIn" title = "Generate Random Movie"  class="pi pi-database" style="color: #708090; font-size: 2rem" @click="generateRandomMovie()"></i>
+    <i
+      v-if="loggedIn"
+      title="Add actor"
+      class="pi pi-user"
+      style="color: #35495e; font-size: 2rem"
+      @click="addActor(parentMovieId)"
+    ></i>
+    <i
+      v-if="loggedIn"
+      title="Add random actor"
+      class="pi pi-users"
+      style="color: #35495e; font-size: 2rem"
+      @click="addRandomActor(parentMovieId)"
+    ></i>
+    <i
+      v-if="loggedIn"
+      title="Delete movie"
+      class="pi pi-trash"
+      style="color: #35495e; font-size: 2rem"
+      @click="deleteMovie(parentMovieId)"
+    ></i>
   </div>
-
 </template>

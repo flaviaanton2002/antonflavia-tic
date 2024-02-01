@@ -9,15 +9,15 @@
         </div>
         <div class="form-group">
           <label for="password" class="green">Password</label>
-          <Field name="password" type="password" class="form-control"/>
+          <Field name="password" type="password" class="form-control" />
           <ErrorMessage name="password" class="error-feedback" />
         </div>
 
         <div class="form-group">
-          <button class="btn btn-primary btn-block" style="background-color: #ffffff" :disabled="loading">
+          <button class="btn btn-primary btn-block" :disabled="loading">
             <span
-                v-show="loading"
-                class="spinner-border spinner-border-sm"
+              v-show="loading"
+              class="spinner-border spinner-border-sm"
             ></span>
             <span>Login</span>
           </button>
@@ -40,10 +40,11 @@
 <script>
 import { Form, Field, ErrorMessage } from "vee-validate";
 import * as yup from "yup";
-import {RouterLink} from "vue-router";
+import { RouterLink } from "vue-router";
 
 export default {
   name: "Login",
+
   components: {
     RouterLink,
     Form,
@@ -62,6 +63,7 @@ export default {
       schema,
     };
   },
+
   computed: {
     loggedIn() {
       return this.$store.state.auth.status.loggedIn;
@@ -72,18 +74,19 @@ export default {
       this.$router.push("/");
     }
   },
+
   methods: {
     handleLogin(user) {
       this.loading = true;
 
       this.$store.dispatch("auth/login", user).then(
-          () => {
-            this.$router.push("/");
-          },
-          (error) => {
-            this.loading = false;
-            this.message = "Authentication Failed"
-          }
+        () => {
+          this.$router.push("/");
+        },
+        (error) => {
+          this.loading = false;
+          this.message = "Authentication failed!";
+        }
       );
     },
   },

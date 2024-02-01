@@ -97,10 +97,11 @@ router.post("/addRandomActor", verifyToken, async (req, res) => {
       }
     }
 
+    var birt = faker.date.birthdate();
     await docRef.set({
       name: faker.person.fullName(),
       role: faker.person.jobType(),
-      birthday: faker.date.birthdate(),
+      birthday: birt.toISOString().split("T")[0],
       image: faker.image.urlLoremFlickr({ category: "people" }),
       movieId,
       ...movieData,

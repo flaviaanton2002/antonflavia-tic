@@ -12,19 +12,19 @@
           <ErrorMessage name="name" class="error-feedback" />
         </div>
         <div class="form-group">
-          <label for="description" class="green">Description</label>
+          <label for="role" class="green">Role</label>
+          <Field name="role" v-model="role" type="text" class="form-control" />
+          <ErrorMessage name="role" class="error-feedback" />
+        </div>
+        <div class="form-group">
+          <label for="birthday" class="green">Birthday</label>
           <Field
-            name="description"
-            v-model="description"
+            name="birthday"
+            v-model="birthday"
             type="text"
             class="form-control"
           />
-          <ErrorMessage name="description" class="error-feedback" />
-        </div>
-        <div class="form-group">
-          <label for="age" class="green">Age</label>
-          <Field name="age" v-model="age" type="number" class="form-control" />
-          <ErrorMessage name="age" class="error-feedback" />
+          <ErrorMessage name="birthday" class="error-feedback" />
         </div>
         <div class="form-group">
           <label for="image" class="green">Image</label>
@@ -38,16 +38,12 @@
         </div>
 
         <div class="form-group">
-          <button
-            class="btn btn-primary btn-block"
-            style="background-color: #ffffff"
-            :disabled="loading"
-          >
+          <button class="btn btn-primary btn-block" :disabled="loading">
             <span
               v-show="loading"
               class="spinner-border spinner-border-sm"
             ></span>
-            <span>Add Actor</span>
+            <span>Add actor</span>
           </button>
         </div>
 
@@ -69,6 +65,7 @@ import UserService from "@/services/user.service.js";
 
 export default {
   name: "AddMovie",
+
   components: {
     RouterLink,
     Form,
@@ -81,9 +78,28 @@ export default {
   data() {
     const schema = yup.object().shape({
       name: yup.string().required("Name is required!"),
-      description: yup.string().required("Description is required!"),
-      age: yup.string().required("Age is required!"),
-      image: yup.string().required("Image is required!"),
+      role: yup.string().required("Role is required!"),
+      birthday: yup
+        .string()
+        .required("Birthday is required!")
+        .test(
+          "valid-date-format",
+          "Date format is ivalid! (YYYY-MM-DD)",
+          (value) => /\d{4}-\d{2}-\d{2}/.test(value)
+        )
+        .test(
+          "valid-date-range",
+          "Birthday cannot be in the future!",
+          function (value) {
+            const currentDate = new Date();
+            const inputDate = new Date(value);
+            return inputDate <= currentDate;
+          }
+        ),
+      image: yup
+        .string()
+        .required("Image is required!")
+        .url("URL format is invalid!"),
     });
 
     return {
@@ -91,19 +107,20 @@ export default {
       message: "",
       schema,
       name: "",
-      description: "",
-      genre: "",
+      role: "",
+      birthday: "",
       image: "",
     };
   },
+
   methods: {
     async handleAddActor(parentMovieId) {
       this.loading = true;
 
       const res = await UserService.addActor(
         this.name,
-        this.description,
-        this.age,
+        this.role,
+        this.birthday,
         this.image,
         parentMovieId
       ).then(

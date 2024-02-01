@@ -1,15 +1,14 @@
-<script setup lang="ts">
-defineProps<{
-  msg: string
-}>()
-</script>
-
 <template>
   <div class="greetings">
-    <h1 class="green">{{ msg }}</h1>
+    <h1 class="green">Welcome to the movies world!</h1>
     <h3>
       You can view my project on
-      <a href="https://github.com/flaviaanton2002/antonflavia-tic" target="_blank" rel="noopener">Github</a>
+      <a
+        href="https://github.com/flaviaanton2002/antonflavia-tic"
+        target="_blank"
+        rel="noopener"
+        >Github</a
+      >
     </h3>
   </div>
 </template>

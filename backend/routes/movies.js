@@ -138,6 +138,15 @@ router.delete("/:id", verifyToken, async (req, res) => {
       return res.status(404).send("Movie not found!");
     }
 
+    const actorsSnapshot = await db
+      .collection("actors")
+      .where("movieId", "==", movieId)
+      .get();
+    const actorDeletionPromises = actorsSnapshot.docs.map((actorDoc) =>
+      actorDoc.ref.delete()
+    );
+    await Promise.all(actorDeletionPromises);
+
     await moviesDoc.delete();
     res.send("Movie deleted successfully!");
   } catch (error) {

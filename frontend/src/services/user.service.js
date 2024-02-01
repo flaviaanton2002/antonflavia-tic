@@ -25,13 +25,13 @@ class UserService {
     );
   }
 
-  addActor(name, description, age, image, movieId) {
+  addActor(name, role, birthday, image, movieId) {
     return axios.post(
       API_URL + "/actors/addActor",
       {
         name,
-        description,
-        age,
+        role,
+        birthday,
         image,
         movieId,
       },
@@ -51,20 +51,20 @@ class UserService {
     });
   }
 
-  generateRandomActor(movieID) {
+  addRandomMovie() {
+    return axios.post(
+      API_URL + "/movies/addRandomMovie",
+      {},
+      { headers: authHeader() }
+    );
+  }
+
+  addRandomActor(movieID) {
     return axios.post(
       API_URL + "/actors/addRandomActor",
       {
         movieID,
       },
-      { headers: authHeader() }
-    );
-  }
-
-  generateRandomMovie() {
-    return axios.post(
-      API_URL + "/movies/addRandomMovie",
-      {},
       { headers: authHeader() }
     );
   }

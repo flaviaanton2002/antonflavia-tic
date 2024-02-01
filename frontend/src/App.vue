@@ -1,8 +1,9 @@
 <script>
 import HomePage from "@/components/HomePage.vue";
 import UserService from "@/services/user.service.js";
+
 export default {
-  components: {HomePage},
+  components: { HomePage },
   computed: {
     loggedIn() {
       return this.$store.state.auth.status.loggedIn;
@@ -10,28 +11,43 @@ export default {
   },
   methods: {
     logOut() {
-      this.$store.dispatch('auth/logout');
-      this.$router.push('/login');
+      this.$store.dispatch("auth/logout");
+      this.$router.push("/login");
     },
-
-  }
-}
-
+    async addRandomMovie() {
+      const res = await UserService.addRandomMovie();
+      this.$router.push("/");
+    },
+  },
+};
 </script>
 
 <template>
   <header>
-    <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" />
+    <img
+      alt="Vue logo"
+      class="logo"
+      src="@/assets/logo.svg"
+      width="125"
+      height="125"
+    />
 
     <div class="wrapper">
-      <HomePage msg="Welcome to the movies world!" />
+      <HomePage />
 
       <nav>
         <RouterLink to="/">Home</RouterLink>
         <RouterLink v-if="!loggedIn" to="/login">Login</RouterLink>
-        <RouterLink v-if="loggedIn"  to="/addMovie">Add Movie</RouterLink>
-        <RouterLink v-if="loggedIn" @click.prevent="logOut" to="/login">Logout</RouterLink>
-
+        <RouterLink v-if="loggedIn" to="/addMovie">Add movie</RouterLink>
+        <RouterLink
+          v-if="loggedIn"
+          @click.prevent="addRandomMovie"
+          to="/addRandomMovie"
+          >Add random movie</RouterLink
+        >
+        <RouterLink v-if="loggedIn" @click.prevent="logOut" to="/login"
+          >Logout</RouterLink
+        >
       </nav>
     </div>
   </header>
