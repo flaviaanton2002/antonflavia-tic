@@ -46,28 +46,34 @@ router.get("/:id", async (req, res) => {
 // POST add a new movie
 router.post("/addMovie", verifyToken, async (req, res) => {
   try {
-    if (
-      !req.body.name ||
-      !req.body.description ||
-      !req.body.genre ||
-      !req.body.image
-    ) {
-      return res.json({ message: "Movie must contain all data!" });
+    const { name, description, genre, image } = req.body;
+
+    if (!name || !description || !genre || !image) {
+      return res.status(400).json({ error: "Movie must contain all data!" });
+    }
+
+    const validGenres = ["Comedy", "Drama", "Action", "Thriller", "Fantastic"];
+    if (!validGenres.includes(genre)) {
+      return res.status(400).json({ error: "Invalid genre!" });
+    }
+
+    if (!/(https?:\/\/.*\.(?:png|jpg|jpeg|gif))/i.test(image)) {
+      return res.status(400).json({ error: "Invalid image URL format!" });
     }
 
     const docRef = db.collection("movies").doc();
     await docRef.set({
       movieId: docRef.id,
-      name: req.body.name,
-      description: req.body.description,
-      genre: req.body.genre,
-      image: req.body.image,
+      name,
+      description,
+      genre,
+      image,
     });
 
     res.json({ message: "Movie added successfully!" });
   } catch (error) {
     console.error("Unable to add a new movie:", error);
-    res.status(500).send("Unable to add a new movie!");
+    res.status(500).json({ error: "Unable to add a new movie!" });
   }
 });
 
@@ -110,7 +116,7 @@ router.put("/:id", verifyToken, async (req, res) => {
       !req.body.genre ||
       !req.body.image
     ) {
-      return res.json({ message: "Movie must contain all data!" });
+      return res.json({ error: "Movie must contain all data!" });
     }
 
     await docRef.update({

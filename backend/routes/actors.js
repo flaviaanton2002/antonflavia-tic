@@ -37,6 +37,8 @@ router.post("/addActor", verifyToken, async (req, res) => {
     let movieData = {
       movieName: null,
       movieDescription: null,
+      movieGenre: null,
+      movieImage: null,
     };
 
     if (movieId) {
@@ -46,24 +48,38 @@ router.post("/addActor", verifyToken, async (req, res) => {
         movieData = {
           movieName: movieDoc.data().name,
           movieDescription: movieDoc.data().description,
+          movieGenre: movieDoc.data().genre,
+          movieImage: movieDoc.data().image,
         };
       }
     }
 
-    if (
-      !req.body.name ||
-      !req.body.role ||
-      !req.body.birthday ||
-      !req.body.image
-    ) {
-      return res.json({ message: "Actor data incomplete!" });
+    const { name, role, birthday, image } = req.body;
+
+    if (!name || !role || !birthday || !image) {
+      return res.status(400).json({ error: "Actor data incomplete!" });
+    }
+
+    const dateFormatValid = /\d{4}-\d{2}-\d{2}/.test(birthday);
+    const currentDate = new Date();
+    const inputDate = new Date(birthday);
+
+    if (!dateFormatValid || inputDate > currentDate) {
+      return res.status(400).json({ error: "Invalid birthday!" });
+    }
+
+    const imageFormatValid = /(https?:\/\/.*\.(?:png|jpg|jpeg|gif))/i.test(
+      image
+    );
+    if (!imageFormatValid) {
+      return res.status(400).json({ error: "Invalid image URL format!" });
     }
 
     await docRef.set({
-      name: req.body.name,
-      role: req.body.role,
-      birthday: req.body.birthday,
-      image: req.body.image,
+      name,
+      role,
+      birthday,
+      image,
       movieId,
       ...movieData,
     });
@@ -126,7 +142,7 @@ router.put("/:id", verifyToken, async (req, res) => {
       !req.body.birthday ||
       !req.body.image
     ) {
-      return res.json({ message: "Actor data incomplete!" });
+      return res.json({ error: "Actor data incomplete!" });
     }
 
     await docRef.update({

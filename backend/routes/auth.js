@@ -11,8 +11,15 @@ router.post("/register", validateRegister, async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // Check if a user with the same email already exists
+    const userRef = db.collection("users");
+    const userQuery = await userRef.where("email", "==", email).get();
 
+    if (!userQuery.empty) {
+      return res.status(400).json({ error: "Email already exists!" });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
     const docRef = db.collection("users").doc();
 
     await docRef.set({

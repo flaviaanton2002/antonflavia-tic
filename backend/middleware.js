@@ -24,11 +24,44 @@ function verifyToken(req, res, next) {
 
 // Middleware to validate user registration data.
 function validateRegister(req, res, next) {
-  const { password } = req.body;
+  const { email, password } = req.body;
 
+  // Check for a valid email address
+  if (!email || !/.+@.+\..+/.test(email)) {
+    return res.status(400).send({
+      message: "Please enter a valid email address!",
+    });
+  }
+
+  // Check for a valid password
   if (!password || password.length < 8) {
     return res.status(400).send({
       message: "Please enter a password with a minimum of 8 characters!",
+    });
+  }
+
+  // Additional password validations
+  if (!/(?=.*[a-z])/.test(password)) {
+    return res.status(400).send({
+      message: "Password must contain at least one lowercase character!",
+    });
+  }
+
+  if (!/(?=.*[A-Z])/.test(password)) {
+    return res.status(400).send({
+      message: "Password must contain at least one uppercase character!",
+    });
+  }
+
+  if (!/(?=.*\d)/.test(password)) {
+    return res.status(400).send({
+      message: "Password must contain at least one digit!",
+    });
+  }
+
+  if (!/(?=.*[!@#$%^&*(),.?":{}|<>])/.test(password)) {
+    return res.status(400).send({
+      message: "Password must contain at least one special character!",
     });
   }
 
