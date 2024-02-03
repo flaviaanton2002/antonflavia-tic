@@ -1,9 +1,7 @@
 <script>
-import HomePage from "@/components/HomePage.vue";
 import UserService from "@/services/user.service.js";
 
 export default {
-  components: { HomePage },
   computed: {
     loggedIn() {
       return this.$store.state.auth.status.loggedIn;
@@ -12,109 +10,59 @@ export default {
   methods: {
     logOut() {
       this.$store.dispatch("auth/logout");
-      this.$router.push("/login");
+      this.$router.push("/");
     },
     async addRandomMovie() {
       const res = await UserService.addRandomMovie();
-      this.$router.push("/");
+      if (this.$route.path === "/") {
+        this.$router.go();
+      } else {
+        this.$router.push("/");
+      }
     },
   },
 };
 </script>
 
 <template>
-  <header>
-    <img
-      alt="Vue logo"
-      class="logo"
-      src="@/assets/logo.svg"
-      width="125"
-      height="125"
-    />
-
-    <div class="wrapper">
-      <HomePage />
-
-      <nav>
-        <RouterLink to="/">Home</RouterLink>
-        <RouterLink v-if="!loggedIn" to="/login">Login</RouterLink>
-        <RouterLink v-if="loggedIn" to="/addMovie">Add movie</RouterLink>
-        <RouterLink
+  <v-layout>
+    <v-navigation-drawer
+      image="https://cdn.vuetifyjs.com/images/backgrounds/bg-2.jpg"
+      permanent
+      theme="dark"
+    >
+      <v-list nav>
+        <v-list-item
+          to="/"
+          prepend-icon="mdi-home"
+          title="Home"
+          value="home"
+        ></v-list-item>
+        <v-list-item
+          v-if="loggedIn"
+          to="/addMovie"
+          prepend-icon="mdi-movie-open-plus"
+          title="Add movie"
+          value="addMovie"
+        ></v-list-item>
+        <v-list-item
           v-if="loggedIn"
           @click.prevent="addRandomMovie"
-          to="/addRandomMovie"
-          >Add random movie</RouterLink
-        >
-        <RouterLink v-if="loggedIn" @click.prevent="logOut" to="/login"
-          >Logout</RouterLink
-        >
-      </nav>
-    </div>
-  </header>
+          prepend-icon="mdi-movie-open-plus-outline"
+          title="Add random movie"
+          value="addRandomMovie"
+        ></v-list-item>
+      </v-list>
 
-  <RouterView />
+      <template v-slot:append>
+        <div class="pa-2">
+          <v-btn block v-if="loggedIn" @click.prevent="logOut" to="/login">
+            Logout
+          </v-btn>
+          <v-btn block v-else to="/login"> Login </v-btn>
+        </div>
+      </template>
+    </v-navigation-drawer>
+    <v-main> <RouterView /> </v-main>
+  </v-layout>
 </template>
-
-<style scoped>
-header {
-  line-height: 1.5;
-  max-height: 100vh;
-}
-
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
-}
-
-nav {
-  width: 100%;
-  font-size: 12px;
-  text-align: center;
-  margin-top: 2rem;
-}
-
-nav a.router-link-exact-active {
-  color: var(--color-text);
-}
-
-nav a.router-link-exact-active:hover {
-  background-color: transparent;
-}
-
-nav a {
-  display: inline-block;
-  padding: 0 1rem;
-  border-left: 1px solid var(--color-border);
-}
-
-nav a:first-of-type {
-  border: 0;
-}
-
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
-
-  nav {
-    text-align: left;
-    margin-left: -1rem;
-    font-size: 1rem;
-
-    padding: 1rem 0;
-    margin-top: 1rem;
-  }
-}
-</style>

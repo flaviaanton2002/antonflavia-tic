@@ -1,154 +1,83 @@
-<template>
-  <div class="col-md-12">
-    <div class="card card-container">
-      <Form @submit="handleRegister" :validation-schema="schema">
-        <div v-if="!successful">
-          <div class="form-group">
-            <label for="email" class="green">Email</label>
-            <Field name="email" type="email" class="form-control" />
-            <ErrorMessage name="email" class="error-feedback" />
-          </div>
-          <div class="form-group">
-            <label for="password" class="green">Password</label>
-            <Field name="password" type="password" class="form-control" />
-            <ErrorMessage name="password" class="error-feedback" />
-          </div>
-
-          <div class="form-group">
-            <button class="btn btn-primary btn-block" :disabled="loading">
-              <span
-                v-show="loading"
-                class="spinner-border spinner-border-sm"
-              ></span>
-              Sign Up
-            </button>
-          </div>
-        </div>
-      </Form>
-
-      <div
-        v-if="message"
-        class="alert"
-        :class="successful ? 'alert-success' : 'alert-danger'"
-      >
-        {{ message }}
-      </div>
-    </div>
-  </div>
-</template>
-
 <script>
-import { Form, Field, ErrorMessage } from "vee-validate";
-import * as yup from "yup";
-
 export default {
-  name: "Register",
-  components: {
-    Form,
-    Field,
-    ErrorMessage,
-  },
   data() {
-    const schema = yup.object().shape({
-      email: yup
-        .string()
-        .required("Email is required!")
-        .email("Email is invalid!"),
-      password: yup
-        .string()
-        .required("Password is required!")
-        .min(8, "Must be at least 8 characters!")
-        .matches(/[a-z]/, "Must have at least one lowercase character!")
-        .matches(/[A-Z]/, "Must have at least one uppercase character!")
-        .matches(/\d/, "Must have at least one digit!")
-        .matches(
-          /[!@#$%^&*(),.?":{}|<>]/,
-          "Must have at least one special character!"
-        ),
-    });
-
+    const schema = {
+      email: [
+        (v) => !!v || "Email is required!",
+        (v) => /.+@.+\..+/.test(v) || "Invalid email format!",
+      ],
+      password: [
+        (v) => !!v || "Password is required!",
+        (v) =>
+          /^[A-Za-z\d!@#$%^&*(),.?":{}|<>]{8,}$/.test(v) ||
+          "Must be at least 8 characters!",
+        (v) =>
+          /^(?=.*[a-z])/.test(v) ||
+          "Must have at least one lowercase character!",
+        (v) =>
+          /^(?=.*[A-Z])/.test(v) ||
+          "Must have at least one uppercase character!",
+        (v) => /^(?=.*\d)/.test(v) || "Must have at least one digit!",
+        (v) =>
+          /^(?=.*[!@#$%^&*(),.?":{}|<>])/.test(v) ||
+          "Must have at least one special character!",
+      ],
+    };
     return {
       successful: false,
-      loading: false,
       message: "",
+      user: {
+        email: "",
+        password: "",
+      },
       schema,
     };
   },
-
   computed: {
     loggedIn() {
       return this.$store.state.auth.status.loggedIn;
     },
   },
-  mounted() {
-    if (this.loggedIn) {
-      this.$router.push("/profile");
-    }
-  },
-
   methods: {
-    handleRegister(user) {
-      this.message = "";
-      this.successful = false;
-      this.loading = true;
-
-      this.$store.dispatch("auth/register", user).then(
-        (data) => {
-          this.message = data.message;
-          this.successful = true;
-          this.loading = false;
-        },
-        (error) => {
-          this.message =
-            (error.response &&
-              error.response.data &&
-              error.response.data.message) ||
-            error.message ||
-            error.toString();
-          this.successful = false;
-          this.loading = false;
-        }
-      );
+    async handleRegister() {
+      try {
+        await this.$store.dispatch("auth/register", this.user);
+        this.successful = true;
+        this.$router.push("/login");
+      } catch (error) {
+        this.message = error.response.data.error;
+        this.successful = false;
+        this.setClearMessageTimeout();
+      }
+    },
+    setClearMessageTimeout() {
+      setTimeout(() => {
+        this.message = "";
+      }, 3000);
     },
   },
 };
 </script>
 
-<style scoped>
-label {
-  display: block;
-  margin-top: 10px;
-}
+<template>
+  <v-form @submit.prevent="handleRegister" v-if="!loggedIn">
+    <v-text-field
+      v-model="user.email"
+      :rules="schema.email"
+      label="Email"
+    ></v-text-field>
 
-.card-container.card {
-  max-width: 350px !important;
-  padding: 40px 40px;
-}
+    <v-text-field
+      v-model="user.password"
+      :rules="schema.password"
+      label="Password"
+      type="password"
+    ></v-text-field>
 
-.card {
-  background-color: rgb(24, 24, 24);
-  padding: 20px 25px 30px;
-  margin: 0 auto 25px;
-  margin-top: 50px;
-  -moz-border-radius: 2px;
-  -webkit-border-radius: 2px;
-  border-radius: 2px;
-  -moz-box-shadow: 0px 2px 2px rgb(0, 189, 126);
-  -webkit-box-shadow: 0px 2px 2px rgb(0, 189, 126);
-  box-shadow: 0px 2px 2px rgb(0, 189, 126);
-}
+    <v-btn color="primary" type="submit"> Submit </v-btn>
 
-.profile-img-card {
-  width: 96px;
-  height: 96px;
-  margin: 0 auto 10px;
-  display: block;
-  -moz-border-radius: 50%;
-  -webkit-border-radius: 50%;
-  border-radius: 50%;
-}
-
-.error-feedback {
-  color: red;
-}
-</style>
+    <v-alert v-if="message" :type="successful ? 'success' : 'error'">
+      {{ message }}
+    </v-alert>
+  </v-form>
+</template>

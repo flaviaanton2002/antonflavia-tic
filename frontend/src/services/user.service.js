@@ -1,7 +1,16 @@
 import axios from "axios";
-import authHeader from "./auth-header";
 
 const API_URL = "http://localhost:3000";
+
+function authHeader() {
+  let user = JSON.parse(localStorage.getItem("user"));
+
+  if (user && user.token) {
+    return { Authorization: `Bearer ${user.token}` };
+  } else {
+    return {};
+  }
+}
 
 class UserService {
   getAllMovies() {

@@ -1,178 +1,115 @@
-<template>
-  <div class="col-md-12">
-    <div class="card card-container">
-      <Form
-        id="addActorForm"
-        v-on:submit="handleAddActor(parentMovieId)"
-        :validation-schema="schema"
-      >
-        <div class="form-group">
-          <label for="name" class="green">Name</label>
-          <Field name="name" v-model="name" type="text" class="form-control" />
-          <ErrorMessage name="name" class="error-feedback" />
-        </div>
-        <div class="form-group">
-          <label for="role" class="green">Role</label>
-          <Field name="role" v-model="role" type="text" class="form-control" />
-          <ErrorMessage name="role" class="error-feedback" />
-        </div>
-        <div class="form-group">
-          <label for="birthday" class="green">Birthday</label>
-          <Field
-            name="birthday"
-            v-model="birthday"
-            type="text"
-            class="form-control"
-          />
-          <ErrorMessage name="birthday" class="error-feedback" />
-        </div>
-        <div class="form-group">
-          <label for="image" class="green">Image</label>
-          <Field
-            name="image"
-            v-model="image"
-            type="text"
-            class="form-control"
-          />
-          <ErrorMessage name="image" class="error-feedback" />
-        </div>
-
-        <div class="form-group">
-          <button class="btn btn-primary btn-block" :disabled="loading">
-            <span
-              v-show="loading"
-              class="spinner-border spinner-border-sm"
-            ></span>
-            <span>Add actor</span>
-          </button>
-        </div>
-
-        <div class="form-group">
-          <div v-if="message" class="alert alert-danger" role="alert">
-            {{ message }}
-          </div>
-        </div>
-      </Form>
-    </div>
-  </div>
-</template>
-
 <script>
-import { Form, Field, ErrorMessage } from "vee-validate";
-import * as yup from "yup";
-import { RouterLink } from "vue-router";
 import UserService from "@/services/user.service.js";
+import { isValid, isAfter } from "date-fns";
 
 export default {
-  name: "AddMovie",
-
-  components: {
-    RouterLink,
-    Form,
-    Field,
-    ErrorMessage,
-  },
   props: {
+    parentMovieName: String,
     parentMovieId: String,
   },
   data() {
-    const schema = yup.object().shape({
-      name: yup.string().required("Name is required!"),
-      role: yup.string().required("Role is required!"),
-      birthday: yup
-        .string()
-        .required("Birthday is required!")
-        .test(
-          "valid-date-format",
-          "Date format is ivalid! (YYYY-MM-DD)",
-          (value) => /\d{4}-\d{2}-\d{2}/.test(value)
-        )
-        .test(
-          "valid-date-range",
-          "Birthday cannot be in the future!",
-          function (value) {
-            const currentDate = new Date();
-            const inputDate = new Date(value);
-            return inputDate <= currentDate;
+    const schema = {
+      name: [(v) => !!v || "Name is required!"],
+      role: [(v) => !!v || "Role is required!"],
+      birthday: [
+        (v) => !!v || "Birthday is required!",
+        (v) => {
+          const dateFormatValid = /\d{4}-\d{2}-\d{2}/.test(v);
+          if (!dateFormatValid) {
+            return "Date format is invalid! (YYYY-MM-DD)";
           }
-        ),
-      image: yup
-        .string()
-        .required("Image is required!")
-        .url("URL format is invalid!"),
-    });
 
+          const inputDate = new Date(v);
+          const currentDate = new Date();
+
+          if (!isValid(inputDate) || isAfter(inputDate, currentDate)) {
+            return "Invalid date!";
+          }
+
+          return true;
+        },
+      ],
+      image: [
+        (v) => !!v || "Image is required!",
+        (v) =>
+          /(https?:\/\/.*\.(?:png|jpg|jpeg|gif))/i.test(v) ||
+          "Invalid image URL format!",
+      ],
+    };
     return {
-      loading: false,
+      successful: false,
       message: "",
+      actor: {
+        name: "",
+        role: "",
+        birthday: "",
+        image: "",
+      },
       schema,
-      name: "",
-      role: "",
-      birthday: "",
-      image: "",
     };
   },
-
+  computed: {
+    loggedIn() {
+      return this.$store.state.auth.status.loggedIn;
+    },
+  },
   methods: {
-    async handleAddActor(parentMovieId) {
-      this.loading = true;
-
-      const res = await UserService.addActor(
-        this.name,
-        this.role,
-        this.birthday,
-        this.image,
-        parentMovieId
-      ).then(
-        () => {
-          this.$router.push("/");
-        },
-        (error) => {
-          this.loading = false;
-          this.message = "Adding Actor Failed";
-        }
-      );
-      console.log(res);
+    async handleAddActor() {
+      try {
+        const data = await UserService.addActor(
+          this.actor.name,
+          this.actor.role,
+          this.actor.birthday,
+          this.actor.image,
+          this.parentMovieId
+        );
+        this.successful = true;
+        this.$router.go(-1);
+      } catch (error) {
+        this.message = error.response.data.error;
+        this.successful = false;
+        this.setClearMessageTimeout();
+      }
+    },
+    setClearMessageTimeout() {
+      setTimeout(() => {
+        this.message = "";
+      }, 3000);
     },
   },
 };
 </script>
 
-<style scoped>
-label {
-  display: block;
-  margin-top: 10px;
-}
+<template>
+  <v-form @submit.prevent="handleAddActor" v-if="loggedIn">
+    <v-text-field
+      v-model="actor.name"
+      :rules="schema.name"
+      label="Name"
+    ></v-text-field>
 
-.card-container.card {
-  max-width: 350px !important;
-  padding: 40px 40px;
-}
+    <v-text-field
+      v-model="actor.role"
+      :rules="schema.role"
+      label="Role"
+    ></v-text-field>
 
-.card {
-  background-color: rgb(24, 24, 24);
-  padding: 20px 25px 30px;
-  margin: 0 auto 25px;
-  margin-top: 50px;
-  -moz-border-radius: 2px;
-  -webkit-border-radius: 2px;
-  border-radius: 2px;
-  -moz-box-shadow: 0px 2px 2px rgb(0, 189, 126);
-  -webkit-box-shadow: 0px 2px 2px rgb(0, 189, 126);
-  box-shadow: 0px 2px 2px rgb(0, 189, 126);
-}
+    <v-text-field
+      v-model="actor.birthday"
+      :rules="schema.birthday"
+      label="Birthday"
+    ></v-text-field>
 
-.profile-img-card {
-  width: 96px;
-  height: 96px;
-  margin: 0 auto 10px;
-  display: block;
-  -moz-border-radius: 50%;
-  -webkit-border-radius: 50%;
-  border-radius: 50%;
-}
+    <v-text-field
+      v-model="actor.image"
+      :rules="schema.image"
+      label="Image"
+    ></v-text-field>
 
-.error-feedback {
-  color: red;
-}
-</style>
+    <v-btn color="primary" type="submit"> Add actor </v-btn>
+
+    <v-alert v-if="message" :type="successful ? 'success' : 'error'">
+      {{ message }}
+    </v-alert>
+  </v-form>
+</template>

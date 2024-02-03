@@ -1,133 +1,68 @@
-<template>
-  <div class="col-md-12">
-    <div class="card card-container">
-      <Form @submit="handleLogin" :validation-schema="schema">
-        <div class="form-group">
-          <label for="email" class="green">Email</label>
-          <Field name="email" type="text" class="form-control" />
-          <ErrorMessage name="email" class="error-feedback" />
-        </div>
-        <div class="form-group">
-          <label for="password" class="green">Password</label>
-          <Field name="password" type="password" class="form-control" />
-          <ErrorMessage name="password" class="error-feedback" />
-        </div>
-
-        <div class="form-group">
-          <button class="btn btn-primary btn-block" :disabled="loading">
-            <span
-              v-show="loading"
-              class="spinner-border spinner-border-sm"
-            ></span>
-            <span>Login</span>
-          </button>
-        </div>
-
-        <div class="form-group">
-          <div v-if="message" class="alert alert-danger" role="alert">
-            {{ message }}
-          </div>
-        </div>
-      </Form>
-
-      <nav>
-        <RouterLink to="/register">You don't have an account yet?</RouterLink>
-      </nav>
-    </div>
-  </div>
-</template>
-
 <script>
-import { Form, Field, ErrorMessage } from "vee-validate";
-import * as yup from "yup";
-import { RouterLink } from "vue-router";
-
 export default {
-  name: "Login",
-
-  components: {
-    RouterLink,
-    Form,
-    Field,
-    ErrorMessage,
-  },
   data() {
-    const schema = yup.object().shape({
-      email: yup.string().required("Email is required!"),
-      password: yup.string().required("Password is required!"),
-    });
-
+    const schema = {
+      email: [(v) => !!v || "Email is required!"],
+      password: [(v) => !!v || "Password is required!"],
+    };
     return {
-      loading: false,
+      successful: false,
       message: "",
+      user: {
+        email: "",
+        password: "",
+      },
       schema,
     };
   },
-
   computed: {
     loggedIn() {
       return this.$store.state.auth.status.loggedIn;
     },
   },
-  created() {
-    if (this.loggedIn) {
-      this.$router.push("/");
-    }
-  },
-
   methods: {
-    handleLogin(user) {
-      this.loading = true;
-
-      this.$store.dispatch("auth/login", user).then(
-        () => {
-          this.$router.push("/");
-        },
-        (error) => {
-          this.loading = false;
-          this.message = "Authentication failed!";
-        }
-      );
+    async handleLogin() {
+      try {
+        await this.$store.dispatch("auth/login", this.user);
+        this.$router.push("/");
+      } catch (error) {
+        this.message = error.response.data.error;
+        this.successful = false;
+        this.setClearMessageTimeout();
+      }
+    },
+    setClearMessageTimeout() {
+      setTimeout(() => {
+        this.message = "";
+      }, 3000);
     },
   },
 };
 </script>
 
-<style scoped>
-label {
-  display: block;
-  margin-top: 10px;
-}
+<template>
+  <v-form @submit.prevent="handleLogin" v-if="!loggedIn">
+    <v-text-field
+      v-model="user.email"
+      :rules="schema.email"
+      label="Email"
+    ></v-text-field>
 
-.card-container.card {
-  max-width: 350px !important;
-  padding: 40px 40px;
-}
+    <v-text-field
+      v-model="user.password"
+      :rules="schema.password"
+      label="Password"
+      type="password"
+    ></v-text-field>
 
-.card {
-  background-color: rgb(24, 24, 24);
-  padding: 20px 25px 30px;
-  margin: 0 auto 25px;
-  margin-top: 50px;
-  -moz-border-radius: 2px;
-  -webkit-border-radius: 2px;
-  border-radius: 2px;
-  -moz-box-shadow: 0px 2px 2px rgb(0, 189, 126);
-  -webkit-box-shadow: 0px 2px 2px rgb(0, 189, 126);
-  box-shadow: 0px 2px 2px rgb(0, 189, 126);
-}
+    <v-btn color="primary" type="submit">Submit</v-btn>
 
-.profile-img-card {
-  width: 96px;
-  height: 96px;
-  margin: 0 auto 10px;
-  display: block;
-  -moz-border-radius: 50%;
-  -webkit-border-radius: 50%;
-  border-radius: 50%;
-}
+    <v-btn v-if="!loggedIn" @click="$router.push('/register')"
+      >You don't have an account yet?</v-btn
+    >
 
-.error-feedback {
-  color: red;
-}
-</style>
+    <v-alert v-if="message" :type="successful ? 'success' : 'error'">
+      {{ message }}
+    </v-alert>
+  </v-form>
+</template>
