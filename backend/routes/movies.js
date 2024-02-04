@@ -57,7 +57,7 @@ router.post("/addMovie", verifyToken, async (req, res) => {
       return res.status(400).json({ error: "Invalid genre!" });
     }
 
-    if (!/(https?:\/\/.*\.(?:png|jpg|jpeg|gif))/i.test(image)) {
+    if (!/^(https?:\/\/.*\.(?:png|jpg|jpeg|gif))/i.test(image)) {
       return res.status(400).json({ error: "Invalid image URL format!" });
     }
 
@@ -114,6 +114,15 @@ router.put("/editMovie/:id", verifyToken, async (req, res) => {
 
     if (!name || !description || !genre || !image) {
       return res.status(400).json({ error: "Movie must contain all data!" });
+    }
+
+    const validGenres = ["Comedy", "Drama", "Action", "Thriller", "Fantastic"];
+    if (!validGenres.includes(genre)) {
+      return res.status(400).json({ error: "Invalid genre!" });
+    }
+
+    if (!/^(https?:\/\/.*\.(?:png|jpg|jpeg|gif))/i.test(image)) {
+      return res.status(400).json({ error: "Invalid image URL format!" });
     }
 
     await docRef.update({

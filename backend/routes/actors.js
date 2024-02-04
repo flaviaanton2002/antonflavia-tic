@@ -82,7 +82,7 @@ router.post("/addActor", verifyToken, async (req, res) => {
       return res.status(400).json({ error: "Invalid birthday!" });
     }
 
-    if (!/(https?:\/\/.*\.(?:png|jpg|jpeg|gif))/i.test(image)) {
+    if (!/^(https?:\/\/.*\.(?:png|jpg|jpeg|gif))/i.test(image)) {
       return res.status(400).json({ error: "Invalid image URL format!" });
     }
 
@@ -162,7 +162,7 @@ router.put("/editActor/:id", verifyToken, async (req, res) => {
       return res.status(400).json({ error: "Invalid birthday!" });
     }
 
-    if (!/(https?:\/\/.*\.(?:png|jpg|jpeg|gif))/i.test(image)) {
+    if (!/^(https?:\/\/.*\.(?:png|jpg|jpeg|gif))/i.test(image)) {
       return res.status(400).json({ error: "Invalid image URL format!" });
     }
 

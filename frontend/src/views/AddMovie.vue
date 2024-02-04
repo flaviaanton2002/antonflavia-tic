@@ -10,7 +10,7 @@ export default {
       image: [
         (v) => !!v || "Image is required!",
         (v) =>
-          /(https?:\/\/.*\.(?:png|jpg|jpeg|gif))/i.test(v) ||
+          /^(https?:\/\/.*\.(?:png|jpg|jpeg|gif))/i.test(v) ||
           "Invalid image URL format!",
       ],
     };
@@ -43,7 +43,6 @@ export default {
         this.successful = true;
         this.$router.go(-1);
       } catch (error) {
-        console.log(error);
         this.message = error.response.data.error;
         this.successful = false;
         this.setClearMessageTimeout();

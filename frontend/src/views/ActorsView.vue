@@ -19,7 +19,6 @@ export default {
   methods: {
     async getAllActors(parentMovieId) {
       const res = await UserService.getAllActors(parentMovieId);
-      console.log(res);
       this.listItems = await res.data;
     },
     addActor(parentMovieId) {

@@ -10,7 +10,7 @@ export default {
       image: [
         (v) => !!v || "Image is required!",
         (v) =>
-          /(https?:\/\/.*\.(?:png|jpg|jpeg|gif))/i.test(v) ||
+          /^(https?:\/\/.*\.(?:png|jpg|jpeg|gif))/i.test(v) ||
           "Invalid image URL format!",
       ],
     };

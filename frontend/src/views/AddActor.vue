@@ -3,10 +3,6 @@ import UserService from "@/services/user.service.js";
 import { isValid, isAfter } from "date-fns";
 
 export default {
-  props: {
-    parentMovieName: String,
-    parentMovieId: String,
-  },
   data() {
     const schema = {
       name: [(v) => !!v || "Name is required!"],
@@ -32,7 +28,7 @@ export default {
       image: [
         (v) => !!v || "Image is required!",
         (v) =>
-          /(https?:\/\/.*\.(?:png|jpg|jpeg|gif))/i.test(v) ||
+          /^(https?:\/\/.*\.(?:png|jpg|jpeg|gif))/i.test(v) ||
           "Invalid image URL format!",
       ],
     };
