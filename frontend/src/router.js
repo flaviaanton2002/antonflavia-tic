@@ -40,6 +40,7 @@ const router = createRouter({
     {
       path: "/addActor/:parentMovieId",
       component: AddActor,
+      props: true,
     },
     {
       path: "/editActor/:actorId",

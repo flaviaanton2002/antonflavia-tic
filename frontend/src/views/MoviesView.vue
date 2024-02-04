@@ -67,77 +67,88 @@ export default {
 </script>
 
 <template>
-  <v-select
-    v-model="selectedGenreFilter"
-    :items="genreFilterOptions"
-    label="Genre filter"
-  ></v-select>
+  <div>
+    <div class="d-flex flex-row col-x-4">
+      <v-select
+        v-model="selectedGenreFilter"
+        :items="genreFilterOptions"
+        label="Genre filter"
+      ></v-select>
 
-  <v-select
-    v-model="selectedSortOption"
-    :items="sortOptions"
-    label="Sort"
-  ></v-select>
+      <v-select
+        v-model="selectedSortOption"
+        :items="sortOptions"
+        label="Sort"
+      ></v-select>
+    </div>
 
-  <v-list style="background-color: transparent">
-    <v-list-item v-for="item in filteredListItems" :key="item.id">
-      <v-card class="mx-auto" max-width="344">
-        <v-img :src="item.image" alt="ERROR" height="75px" cover></v-img>
+    <v-row class="d-flex flex-row col-x-4">
+      <v-col
+        v-for="item in filteredListItems"
+        :key="item.id"
+        cols="12"
+        sm="6"
+        md="4"
+        lg="3"
+      >
+        <v-card class="mx-auto">
+          <v-img :src="item.image" alt="ERROR" height="75px" cover></v-img>
 
-        <v-card-title>
-          <RouterLink
-            :to="'/actors/' + item.name + '/' + item.id"
-            class="movie-link"
-          >
-            {{ item.name }}
-          </RouterLink>
-        </v-card-title>
+          <v-card-title>
+            <RouterLink
+              :to="'/actors/' + item.name + '/' + item.id"
+              class="movie-link"
+            >
+              {{ item.name }}
+            </RouterLink>
+          </v-card-title>
 
-        <v-card-subtitle class="genre">
-          {{ item.genre }}
-        </v-card-subtitle>
+          <v-card-subtitle class="genre">
+            {{ item.genre }}
+          </v-card-subtitle>
 
-        <v-card-actions>
-          <v-btn
-            v-if="loggedIn"
-            title="Edit movie"
-            @click="editMovie(item.id)"
-            class="ms-2"
-            icon="mdi-movie-open-edit"
-            variant="text"
-          ></v-btn>
+          <v-card-actions>
+            <v-btn
+              v-if="loggedIn"
+              title="Edit movie"
+              @click="editMovie(item.id)"
+              class="ms-2"
+              icon="mdi-movie-open-edit"
+              variant="text"
+            ></v-btn>
 
-          <v-btn
-            v-if="loggedIn"
-            title="Delete movie"
-            @click="deleteMovie(item.id)"
-            class="ms-2"
-            icon="mdi-movie-open-remove"
-            variant="text"
-          ></v-btn>
+            <v-btn
+              v-if="loggedIn"
+              title="Delete movie"
+              @click="deleteMovie(item.id)"
+              class="ms-2"
+              icon="mdi-movie-open-remove"
+              variant="text"
+            ></v-btn>
 
-          <v-btn
-            :icon="
-              selectedMovieId === item.id
-                ? 'mdi-chevron-up'
-                : 'mdi-chevron-down'
-            "
-            @click="selectMovie(item.id)"
-          ></v-btn>
-        </v-card-actions>
+            <v-btn
+              :icon="
+                selectedMovieId === item.id
+                  ? 'mdi-chevron-up'
+                  : 'mdi-chevron-down'
+              "
+              @click="selectMovie(item.id)"
+            ></v-btn>
+          </v-card-actions>
 
-        <v-expand-transition>
-          <div v-show="selectedMovieId === item.id">
-            <v-divider></v-divider>
+          <v-expand-transition>
+            <div v-show="selectedMovieId === item.id">
+              <v-divider></v-divider>
 
-            <v-card-text>
-              {{ item.description }}
-            </v-card-text>
-          </div>
-        </v-expand-transition>
-      </v-card>
-    </v-list-item>
-  </v-list>
+              <v-card-text>
+                {{ item.description }}
+              </v-card-text>
+            </div>
+          </v-expand-transition>
+        </v-card>
+      </v-col>
+    </v-row>
+  </div>
 </template>
 
 <style scoped>
