@@ -10,17 +10,14 @@ const db = admin.firestore();
 router.get("/:id", async (req, res) => {
   try {
     const movieId = req.params.id;
-
     const actorsSnapshot = await db
       .collection("actors")
       .where("movieId", "==", movieId)
       .get();
-
     const actors = actorsSnapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
     }));
-
     res.json(actors);
   } catch (error) {
     console.error("Error getting actors:", error);
@@ -31,19 +28,15 @@ router.get("/:id", async (req, res) => {
 // POST add a new actor
 router.post("/addActor", verifyToken, async (req, res) => {
   try {
-    const docRef = db.collection("actors").doc();
     const movieId = req.body.movieId;
-
     let movieData = {
       movieName: null,
       movieDescription: null,
       movieGenre: null,
       movieImage: null,
     };
-
     if (movieId) {
       const movieDoc = await db.collection("movies").doc(movieId).get();
-
       if (movieDoc.exists) {
         movieData = {
           movieName: movieDoc.data().name,
@@ -63,18 +56,15 @@ router.post("/addActor", verifyToken, async (req, res) => {
     const dateFormatValid = /\d{4}-\d{2}-\d{2}/.test(birthday);
     const currentDate = new Date();
     const inputDate = new Date(birthday);
-
     if (!dateFormatValid || inputDate > currentDate) {
       return res.status(400).json({ error: "Invalid birthday!" });
     }
 
-    const imageFormatValid = /(https?:\/\/.*\.(?:png|jpg|jpeg|gif))/i.test(
-      image
-    );
-    if (!imageFormatValid) {
+    if (!/(https?:\/\/.*\.(?:png|jpg|jpeg|gif))/i.test(image)) {
       return res.status(400).json({ error: "Invalid image URL format!" });
     }
 
+    const docRef = db.collection("actors").doc();
     await docRef.set({
       name,
       role,
@@ -94,25 +84,26 @@ router.post("/addActor", verifyToken, async (req, res) => {
 // POST add a new random actor
 router.post("/addRandomActor", verifyToken, async (req, res) => {
   try {
-    const docRef = db.collection("actors").doc();
-    const movieId = req.body.movieID;
-
+    const movieId = req.body.movieId;
     let movieData = {
       movieName: null,
       movieDescription: null,
+      movieGenre: null,
+      movieImage: null,
     };
-
     if (movieId) {
       const movieDoc = await db.collection("movies").doc(movieId).get();
-
       if (movieDoc.exists) {
         movieData = {
           movieName: movieDoc.data().name,
           movieDescription: movieDoc.data().description,
+          movieGenre: movieDoc.data().genre,
+          movieImage: movieDoc.data().image,
         };
       }
     }
 
+    const docRef = db.collection("actors").doc();
     var birt = faker.date.birthdate();
     await docRef.set({
       name: faker.person.fullName(),
@@ -164,14 +155,13 @@ router.put("/:id", verifyToken, async (req, res) => {
 router.delete("/:id", verifyToken, async (req, res) => {
   try {
     const actorId = req.params.id;
-    const actorsDoc = db.collection("actors").doc(actorId);
-    const snapshot = await actorsDoc.get();
-
-    if (!snapshot.exists) {
+    const actorDoc = db.collection("actors").doc(actorId);
+    const actorSnapshot = await actorDoc.get();
+    if (!actorSnapshot.exists) {
       return res.status(404).send("Actor not found!");
     }
 
-    await actorsDoc.delete();
+    await actorDoc.delete();
     res.send("Actor deleted successfully!");
   } catch (error) {
     console.error("Error deleting actor:", error);

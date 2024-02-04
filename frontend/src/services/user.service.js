@@ -48,14 +48,14 @@ class UserService {
     );
   }
 
-  deleteMovie(movieID) {
-    return axios.delete(API_URL + "/movies/" + movieID, {
+  deleteMovie(movieId) {
+    return axios.delete(API_URL + "/movies/" + movieId, {
       headers: authHeader(),
     });
   }
 
-  deleteActor(actorID) {
-    return axios.delete(API_URL + "/actors/" + actorID, {
+  deleteActor(actorId) {
+    return axios.delete(API_URL + "/actors/" + actorId, {
       headers: authHeader(),
     });
   }
@@ -68,11 +68,11 @@ class UserService {
     );
   }
 
-  addRandomActor(movieID) {
+  addRandomActor(movieId) {
     return axios.post(
       API_URL + "/actors/addRandomActor",
       {
-        movieID,
+        movieId,
       },
       { headers: authHeader() }
     );

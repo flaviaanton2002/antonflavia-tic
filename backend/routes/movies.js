@@ -21,35 +21,13 @@ router.get("/", async (req, res) => {
   }
 });
 
-// GET movie by ID
-router.get("/:id", async (req, res) => {
-  try {
-    const movieId = req.params.id;
-    const movieDoc = await db.collection("movies").doc(movieId).get();
-
-    if (!movieDoc.exists) {
-      return res.status(404).send("Movie not found!");
-    }
-
-    const movieData = {
-      id: movieDoc.id,
-      ...movieDoc.data(),
-    };
-
-    res.json(movieData);
-  } catch (error) {
-    console.error("Error getting movie by ID:", error);
-    res.status(500).send("Internal server error!");
-  }
-});
-
 // POST add a new movie
 router.post("/addMovie", verifyToken, async (req, res) => {
   try {
     const { name, description, genre, image } = req.body;
 
     if (!name || !description || !genre || !image) {
-      return res.status(400).json({ error: "Movie must contain all data!" });
+      return res.status(400).json({ error: "Movie date incomplete!" });
     }
 
     const validGenres = ["Comedy", "Drama", "Action", "Thriller", "Fantastic"];
@@ -137,10 +115,9 @@ router.put("/:id", verifyToken, async (req, res) => {
 router.delete("/:id", verifyToken, async (req, res) => {
   try {
     const movieId = req.params.id;
-    const moviesDoc = db.collection("movies").doc(movieId);
-
-    const snapshot = await moviesDoc.get();
-    if (!snapshot.exists) {
+    const movieDoc = db.collection("movies").doc(movieId);
+    const movieSnapshot = await movieDoc.get();
+    if (!movieSnapshot.exists) {
       return res.status(404).send("Movie not found!");
     }
 
@@ -153,7 +130,7 @@ router.delete("/:id", verifyToken, async (req, res) => {
     );
     await Promise.all(actorDeletionPromises);
 
-    await moviesDoc.delete();
+    await movieDoc.delete();
     res.send("Movie deleted successfully!");
   } catch (error) {
     console.error("Error deleting movie:", error);

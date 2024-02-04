@@ -6,7 +6,7 @@ function verifyToken(req, res, next) {
 
   if (!authorization) {
     return res.status(400).send({
-      message: "Your session is not valid!",
+      error: "Your session is not valid!",
     });
   }
 
@@ -17,7 +17,7 @@ function verifyToken(req, res, next) {
     next();
   } catch (err) {
     return res.status(400).send({
-      message: "Your session is not valid!",
+      error: "Your session is not valid!",
     });
   }
 }
@@ -26,42 +26,39 @@ function verifyToken(req, res, next) {
 function validateRegister(req, res, next) {
   const { email, password } = req.body;
 
-  // Check for a valid email address
   if (!email || !/.+@.+\..+/.test(email)) {
     return res.status(400).send({
-      message: "Please enter a valid email address!",
+      error: "Please enter a valid email!",
     });
   }
 
-  // Check for a valid password
   if (!password || password.length < 8) {
     return res.status(400).send({
-      message: "Please enter a password with a minimum of 8 characters!",
+      error: "Please enter a password with a minimum of 8 characters!",
     });
   }
 
-  // Additional password validations
   if (!/(?=.*[a-z])/.test(password)) {
     return res.status(400).send({
-      message: "Password must contain at least one lowercase character!",
+      error: "Please enter a password with at least one lowercase character!",
     });
   }
 
   if (!/(?=.*[A-Z])/.test(password)) {
     return res.status(400).send({
-      message: "Password must contain at least one uppercase character!",
+      error: "Please enter a password with at least one uppercase character!",
     });
   }
 
   if (!/(?=.*\d)/.test(password)) {
     return res.status(400).send({
-      message: "Password must contain at least one digit!",
+      error: "Please enter a password with at least one digit!",
     });
   }
 
   if (!/(?=.*[!@#$%^&*(),.?":{}|<>])/.test(password)) {
     return res.status(400).send({
-      message: "Password must contain at least one special character!",
+      error: "Please enter a password with at least one special character!",
     });
   }
 
