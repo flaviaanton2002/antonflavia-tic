@@ -41,59 +41,63 @@ export default {
 </script>
 
 <template>
-  <div>
-    <h1 style="color: white">Cast of the movie "{{ parentMovieName }}"</h1>
-    <v-container>
-      <v-row dense>
-        <v-col cols="12" v-for="item in listItems">
-          <v-card
-            image="https://cdn.vuetifyjs.com/images/backgrounds/bg-2.jpg"
-            theme="dark"
-          >
-            <div class="d-flex flex-no-wrap justify-space-between">
-              <div>
-                <v-card-title class="text-h5"> {{ item.role }} </v-card-title>
+  <v-container>
+    <h1>Cast of the movie "{{ parentMovieName }}"</h1>
+    <v-row dense>
+      <v-col cols="12" v-for="item in listItems">
+        <v-card
+          image="https://cdn.vuetifyjs.com/images/backgrounds/bg-2.jpg"
+          theme="dark"
+        >
+          <div class="d-flex flex-no-wrap justify-space-between">
+            <div>
+              <v-card-title class="text-h5"> {{ item.role }} </v-card-title>
 
-                <v-card-subtitle>{{ item.name }}</v-card-subtitle>
-                <v-card-subtitle>{{ item.birthday }}</v-card-subtitle>
+              <v-card-subtitle>{{ item.name }}</v-card-subtitle>
+              <v-card-subtitle>{{ item.birthday }}</v-card-subtitle>
 
-                <v-card-actions>
-                  <v-btn
-                    v-if="loggedIn"
-                    title="Delete actor"
-                    @click="deleteActor(item.id)"
-                    class="ms-2"
-                    icon="mdi-account-remove"
-                    variant="text"
-                  ></v-btn>
-                </v-card-actions>
-              </div>
+              <v-card-actions>
+                <v-btn
+                  v-if="loggedIn"
+                  title="Edit actor"
+                  class="ms-2"
+                  icon="mdi-account-edit"
+                  variant="text"
+                ></v-btn>
 
-              <v-avatar class="ma-3" size="125" rounded="0">
-                <v-img :src="item.image"></v-img>
-              </v-avatar>
+                <v-btn
+                  v-if="loggedIn"
+                  title="Delete actor"
+                  @click="deleteActor(item.id)"
+                  class="ms-2"
+                  icon="mdi-account-remove"
+                  variant="text"
+                ></v-btn>
+              </v-card-actions>
             </div>
-          </v-card>
-        </v-col>
-        <v-btn
-          v-if="loggedIn"
-          title="Add actor"
-          @click="addActor(parentMovieId)"
-          class="ms-2"
-          icon="mdi-account-plus"
-          variant="text"
-          color="white"
-        ></v-btn>
-        <v-btn
-          v-if="loggedIn"
-          title="Add random actor"
-          @click="addRandomActor(parentMovieId)"
-          class="ms-2"
-          icon="mdi-account-plus-outline"
-          variant="text"
-          color="white"
-        ></v-btn>
-      </v-row>
-    </v-container>
-  </div>
+
+            <v-avatar class="ma-3" size="125" rounded="0">
+              <v-img :src="item.image"></v-img>
+            </v-avatar>
+          </div>
+        </v-card>
+      </v-col>
+      <v-btn
+        v-if="loggedIn"
+        title="Add actor"
+        @click="addActor(parentMovieId)"
+        class="ms-2"
+        icon="mdi-account-plus"
+        variant="text"
+      ></v-btn>
+      <v-btn
+        v-if="loggedIn"
+        title="Add random actor"
+        @click="addRandomActor(parentMovieId)"
+        class="ms-2"
+        icon="mdi-account-plus-outline"
+        variant="text"
+      ></v-btn>
+    </v-row>
+  </v-container>
 </template>
