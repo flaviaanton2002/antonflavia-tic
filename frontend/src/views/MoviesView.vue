@@ -67,6 +67,7 @@ export default {
 </script>
 
 <template>
+<<<<<<< HEAD
   <div>
     <div class="d-flex flex-row col-x-4">
       <v-select
@@ -93,6 +94,30 @@ export default {
       >
         <v-card class="mx-auto">
           <v-img :src="item.image" alt="ERROR" height="75px" cover></v-img>
+=======
+  <div class="d-flex flex-row col-x-4">
+    <v-select
+      v-model="selectedGenreFilter"
+      :items="genreFilterOptions"
+      label="Genre filter"
+    ></v-select>
+
+    <v-select
+      v-model="selectedSortOption"
+      :items="sortOptions"
+      label="Sort"
+    ></v-select>
+  </div>
+
+  <v-list class="d-flex flex-row col-x-4" style="background-color: transparent">
+    <v-list-item
+      class="flex-32 p-inline-0"
+      v-for="item in filteredListItems"
+      :key="item.id"
+    >
+      <v-card class="mx-auto">
+        <v-img :src="item.image" alt="ERROR" height="75px" cover></v-img>
+>>>>>>> be00ab793dd52e4ad80c0aca51f3a888d18f9df7
 
           <v-card-title>
             <RouterLink
@@ -161,5 +186,16 @@ export default {
 .genre {
   color: #2196f3;
   text-transform: uppercase;
+}
+
+.flex-32 {
+  flex: calc(100% / 3 - 32px);
+}
+
+.p-inline-0 {
+  padding-inline: 0 !important;
+}
+.col-x-4 {
+  column-gap: 16px;
 }
 </style>
