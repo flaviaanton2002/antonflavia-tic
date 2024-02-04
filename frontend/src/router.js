@@ -5,6 +5,8 @@ import MoviesView from "@/views/MoviesView.vue";
 import ActorsView from "@/views/ActorsView.vue";
 import AddMovie from "@/views/AddMovie.vue";
 import AddActor from "@/views/AddActor.vue";
+import EditMovie from "@/views/EditMovie.vue";
+import EditActor from "@/views/EditActor.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -27,6 +29,10 @@ const router = createRouter({
       component: AddMovie,
     },
     {
+      path: "/editMovie/:movieId",
+      component: EditMovie,
+    },
+    {
       path: "/actors/:parentMovieName/:parentMovieId",
       component: ActorsView,
       props: true,
@@ -34,6 +40,11 @@ const router = createRouter({
     {
       path: "/addActor/:parentMovieId",
       component: AddActor,
+      props: true,
+    },
+    {
+      path: "/editActor/:actorId",
+      component: EditActor,
       props: true,
     },
   ],

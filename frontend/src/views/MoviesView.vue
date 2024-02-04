@@ -45,6 +45,9 @@ export default {
       const res = await UserService.getAllMovies();
       this.listItems = await res.data;
     },
+    editMovie(movieId) {
+      this.$router.push("/editMovie/" + movieId);
+    },
     async deleteMovie(movieId) {
       const res = await UserService.deleteMovie(movieId);
       this.$router.go();
@@ -98,6 +101,7 @@ export default {
           <v-btn
             v-if="loggedIn"
             title="Edit movie"
+            @click="editMovie(item.id)"
             class="ms-2"
             icon="mdi-movie-open-edit"
             variant="text"

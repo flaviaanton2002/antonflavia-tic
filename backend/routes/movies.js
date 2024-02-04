@@ -21,6 +21,28 @@ router.get("/", async (req, res) => {
   }
 });
 
+// GET a movie by ID
+router.get("/:id", async (req, res) => {
+  try {
+    const movieId = req.params.id;
+    const movieDoc = await db.collection("movies").doc(movieId).get();
+
+    if (!movieDoc.exists) {
+      return res.status(404).json({ error: "Movie not found!" });
+    }
+
+    const movieData = {
+      id: movieDoc.id,
+      ...movieDoc.data(),
+    };
+
+    res.json(movieData);
+  } catch (error) {
+    console.error("Error getting movie by ID:", error);
+    res.status(500).json({ error: "Internal server error!" });
+  }
+});
+
 // POST add a new movie
 router.post("/addMovie", verifyToken, async (req, res) => {
   try {
@@ -83,31 +105,47 @@ router.post("/addRandomMovie", verifyToken, async (req, res) => {
 });
 
 // PUT update a movie by ID
-router.put("/:id", verifyToken, async (req, res) => {
+router.put("/editMovie/:id", verifyToken, async (req, res) => {
   try {
     const movieId = req.params.id;
     const docRef = db.collection("movies").doc(movieId);
 
-    if (
-      !req.body.name ||
-      !req.body.description ||
-      !req.body.genre ||
-      !req.body.image
-    ) {
-      return res.json({ error: "Movie must contain all data!" });
+    const { name, description, genre, image } = req.body;
+
+    if (!name || !description || !genre || !image) {
+      return res.status(400).json({ error: "Movie must contain all data!" });
     }
 
     await docRef.update({
-      name: req.body.name,
-      description: req.body.description,
-      genre: req.body.genre,
-      image: req.body.image,
+      name,
+      description,
+      genre,
+      image,
     });
 
-    res.json({ message: "Movie updated successfully!" });
+    const actorsSnapshot = await db
+      .collection("actors")
+      .where("movieId", "==", movieId)
+      .get();
+    const batch = db.batch();
+
+    actorsSnapshot.forEach((actorDoc) => {
+      const actorRef = db.collection("actors").doc(actorDoc.id);
+
+      batch.update(actorRef, {
+        movieName: name,
+        movieDescription: description,
+        movieGenre: genre,
+        movieImage: image,
+      });
+    });
+
+    await batch.commit();
+
+    res.json({ message: "Movie and actors updated successfully!" });
   } catch (error) {
-    console.error("Unable to update the movie:", error);
-    res.status(500).send("Unable to update the movie!");
+    console.error("Unable to update the movie and actors:", error);
+    res.status(500).send("Unable to update the movie and actors!");
   }
 });
 

@@ -48,6 +48,44 @@ class UserService {
     );
   }
 
+  getMovieById(movieId) {
+    return axios.get(API_URL + "/movies/" + movieId, {
+      headers: authHeader(),
+    });
+  }
+
+  editMovie(name, description, genre, image, movieId) {
+    return axios.put(
+      API_URL + "/movies/editMovie/" + movieId,
+      {
+        name,
+        description,
+        genre,
+        image,
+      },
+      { headers: authHeader() }
+    );
+  }
+
+  getActorById(actorId) {
+    return axios.get(API_URL + "/actors/getActor/" + actorId, {
+      headers: authHeader(),
+    });
+  }
+
+  editActor(name, role, birthday, image, actorId) {
+    return axios.put(
+      API_URL + "/actors/editActor/" + actorId,
+      {
+        name,
+        role,
+        birthday,
+        image,
+      },
+      { headers: authHeader() }
+    );
+  }
+
   deleteMovie(movieId) {
     return axios.delete(API_URL + "/movies/" + movieId, {
       headers: authHeader(),

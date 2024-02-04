@@ -25,6 +25,28 @@ router.get("/:id", async (req, res) => {
   }
 });
 
+// GET an actor by ID
+router.get("/getActor/:id", async (req, res) => {
+  try {
+    const actorId = req.params.id;
+    const actorDoc = await db.collection("actors").doc(actorId).get();
+
+    if (!actorDoc.exists) {
+      return res.status(404).json({ error: "Actor not found!" });
+    }
+
+    const actorData = {
+      id: actorDoc.id,
+      ...actorDoc.data(),
+    };
+
+    res.json(actorData);
+  } catch (error) {
+    console.error("Error getting actor by ID:", error);
+    res.status(500).json({ error: "Internal server error!" });
+  }
+});
+
 // POST add a new actor
 router.post("/addActor", verifyToken, async (req, res) => {
   try {
@@ -122,26 +144,33 @@ router.post("/addRandomActor", verifyToken, async (req, res) => {
 });
 
 // PUT update an actor by ID
-router.put("/:id", verifyToken, async (req, res) => {
+router.put("/editActor/:id", verifyToken, async (req, res) => {
   try {
     const id = req.params.id;
     const docRef = db.collection("actors").doc(id);
 
-    if (
-      !req.body.name ||
-      !req.body.role ||
-      !req.body.birthday ||
-      !req.body.image
-    ) {
-      return res.json({ error: "Actor data incomplete!" });
+    const { name, role, birthday, image } = req.body;
+
+    if (!name || !role || !birthday || !image) {
+      return res.status(400).json({ error: "Actor data incomplete!" });
+    }
+
+    const dateFormatValid = /\d{4}-\d{2}-\d{2}/.test(birthday);
+    const currentDate = new Date();
+    const inputDate = new Date(birthday);
+    if (!dateFormatValid || inputDate > currentDate) {
+      return res.status(400).json({ error: "Invalid birthday!" });
+    }
+
+    if (!/(https?:\/\/.*\.(?:png|jpg|jpeg|gif))/i.test(image)) {
+      return res.status(400).json({ error: "Invalid image URL format!" });
     }
 
     await docRef.update({
-      name: req.body.name,
-      role: req.body.role,
-      birthday: req.body.birthday,
-      image: req.body.image,
-      movieId: req.body.movieId,
+      name,
+      role,
+      birthday,
+      image,
     });
 
     res.json({ message: "Actor updated successfully!" });

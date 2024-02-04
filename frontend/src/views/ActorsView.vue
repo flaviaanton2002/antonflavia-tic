@@ -29,6 +29,9 @@ export default {
       const res = await UserService.addRandomActor(parentMovieId);
       this.$router.go();
     },
+    editActor(actorId) {
+      this.$router.push("/editActor/" + actorId);
+    },
     async deleteActor(actorId) {
       const res = await UserService.deleteActor(actorId);
       this.$router.go();
@@ -60,6 +63,7 @@ export default {
                 <v-btn
                   v-if="loggedIn"
                   title="Edit actor"
+                  @click="editActor(item.id)"
                   class="ms-2"
                   icon="mdi-account-edit"
                   variant="text"
