@@ -3,6 +3,7 @@ const router = express.Router();
 const admin = require("firebase-admin");
 const { verifyToken } = require("../middleware.js");
 const { faker } = require("@faker-js/faker");
+const { isValid, isAfter } = require("date-fns");
 
 const db = admin.firestore();
 
@@ -76,9 +77,14 @@ router.post("/addActor", verifyToken, async (req, res) => {
     }
 
     const dateFormatValid = /\d{4}-\d{2}-\d{2}/.test(birthday);
-    const currentDate = new Date();
+    if (!dateFormatValid) {
+      return res
+        .status(400)
+        .json({ error: "Birthday format is invalid! (YYYY-MM-DD)" });
+    }
     const inputDate = new Date(birthday);
-    if (!dateFormatValid || inputDate > currentDate) {
+    const currentDate = new Date();
+    if (!isValid(inputDate) || isAfter(inputDate, currentDate)) {
       return res.status(400).json({ error: "Invalid birthday!" });
     }
 
